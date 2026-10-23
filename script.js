@@ -52,14 +52,15 @@ function newSheet(nature = 'neutre') {
     id: uid(), ...Object.fromEntries(TEXT_FIELDS.map(f => [f, ''])), level: 1, incant: '',
     nature, creationNature: nature, phase: 1,
     carac: base, p1: { ...base }, kept: 0, mod: zero(), caracInit: null, caracMax: null, fund: null,
-    coins: { go: 0, po: 0, pa: 0 }, skills: [], flaws: [], spells: [], cards: [], subPair: {}, chance: 1, theme: 'parchemin', font: 'classique', savedAt: null, changedAt: null, exportedAt: null, createdAt: new Date().toISOString()
+    coins: { go: 0, po: 0, pa: 0 }, skills: [], flaws: [], spells: [], cards: [], weapons: [], armor: { type: '', reduction: 0 }, subPair: {}, chance: 1, theme: 'parchemin', font: 'classique', savedAt: null, changedAt: null, exportedAt: null, createdAt: new Date().toISOString()
   };
 }
 const blankCard = () => ({ name: '', desc: '', stat: '', type: 'manoeuvre', cast: '', mana: '', range: '', turn: 0, active: false, o: {} });
+const blankWeapon = () => ({ id: uid(), name: '', damage: '', range: '', magical: 'no' });
 // Complète une fiche ancienne ou importée avec les valeurs par défaut
 function norm(s) {
   const d = newSheet(NATURES[s.nature] ? s.nature : 'neutre'), o = { ...d, ...s };
-  o.coins = { ...d.coins, ...s.coins }; o.carac = { ...d.carac, ...s.carac }; o.mod = { ...d.mod, ...s.mod }; o.subPair = { ...s.subPair };
+  o.coins = { ...d.coins, ...s.coins }; o.armor = { ...d.armor, ...(s.armor || {}) }; o.weapons = (Array.isArray(s.weapons) ? s.weapons : []).map(w => ({ ...blankWeapon(), ...w, id: w.id || uid() })); o.carac = { ...d.carac, ...s.carac }; o.mod = { ...d.mod, ...s.mod }; o.subPair = { ...s.subPair };
   ['skills', 'flaws', 'spells'].forEach(k => { o[k] = Array.isArray(s[k]) ? s[k] : []; });
   o.spells = o.spells.map(k => ({ ...k, id: k.id || uid() }));
   o.cards = (Array.isArray(s.cards) ? s.cards : []).map(c => ({ ...blankCard(), ...c, o: { ...c.o } }));
@@ -259,6 +260,42 @@ function renderCards(s) {
   }).join('') || '<div class="hint-line">Aucune card à afficher.</div>';
   document.querySelectorAll('#cards textarea').forEach(grow);
 }
+// Chaque grande section peut être repliée indépendamment ; l’état reste dans ce navigateur.
+function setupCollapsibleSections() {
+  document.querySelectorAll('.sheet > .section').forEach((section, index) => {
+    const head = section.querySelector(':scope > .section-head');
+    if (!head || section.dataset.collapseReady) return;
+    section.dataset.collapseReady = '1';
+    const body = document.createElement('div'); body.className = 'section-content';
+    let node = head.nextSibling;
+    while (node) {
+      const next = node.nextSibling;
+      if (node.nodeType === 1 && node.classList.contains('section-head')) break;
+      if (node.nodeType === 1 && node.tagName === 'FOOTER') break;
+      body.appendChild(node); node = next;
+    }
+    section.appendChild(body);
+    const button = document.createElement('button');
+    button.type = 'button'; button.className = 'collapse-toggle'; button.dataset.collapse = String(index);
+    button.setAttribute('aria-expanded', 'true'); button.setAttribute('aria-label', 'Replier cette section'); button.textContent = '−';
+    head.appendChild(button);
+    const closed = localStorage.getItem('coia-section-' + index) === 'closed';
+    body.hidden = closed; button.setAttribute('aria-expanded', String(!closed));
+    button.textContent = closed ? '+' : '−'; button.setAttribute('aria-label', closed ? 'Déplier cette section' : 'Replier cette section');
+  });
+}
+
+function renderWeapons(s) {
+  $('weapons').innerHTML = s.weapons.map((w, i) => `<div class="weapon-item">
+    <div class="weapon-title-row"><input class="weapon-name" data-weapon="name" data-i="${i}" value="${esc(w.name)}" placeholder="Nom de l’arme" aria-label="Nom de l’arme ${i + 1}"><button type="button" data-weapon-del="${i}" class="delete-weapon" aria-label="Supprimer ${esc(w.name || 'cette arme')}">✕</button></div>
+    <div class="weapon-fields">
+      <label class="field">Dés de dégâts<input data-weapon="damage" data-i="${i}" value="${esc(w.damage)}" placeholder="Ex. 1d8 + Force"></label>
+      <label class="field">Portée<input data-weapon="range" data-i="${i}" value="${esc(w.range)}" placeholder="Ex. contact, 20 m"></label>
+      <label class="field">Magique ?<select data-weapon="magical" data-i="${i}" aria-label="Arme magique ?"><option value="no" ${w.magical === 'no' ? 'selected' : ''}>Non</option><option value="yes" ${w.magical === 'yes' ? 'selected' : ''}>Oui</option></select></label>
+    </div></div>`).join('') || '<p class="small no-weapons">Aucune arme ajoutée.</p>';
+  $('armorType').value = s.armor.type || ''; $('armorReduction').value = s.armor.reduction ?? 0;
+}
+
 function renderTabs() {
   $('sheets').innerHTML = store.order.map(id => `<div class="tab ${id === store.active ? 'active' : ''}">
     <button class="pick" data-tab="${id}">${esc(store.sheets[id].name || 'Sans nom')}</button><button class="x" data-close="${id}" aria-label="Fermer la fiche">✕</button></div>`).join('')
@@ -340,7 +377,7 @@ function render() {
   $('levelUp').classList.toggle('hidden', ph !== 3); $('levelUp').textContent = levelUp ? 'Terminer Level Up' : 'Level Up';
   $('restore').disabled = !snaps[s.id];
   $('saveInfo').textContent = `Enregistrement automatique dans ce navigateur, sur cet appareil. Dernier : ${fmtDate(s.savedAt)}`;
-  renderTabs(); renderLists(s); renderExport();
+  renderTabs(); renderLists(s); renderWeapons(s); renderExport();
 }
 function commit() { render(); save(); }
 
@@ -366,6 +403,8 @@ setInterval(renderExport, 60000);
 // Saisie de texte : enregistrée sans réafficher (le curseur ne bouge pas)
 document.addEventListener('input', e => {
   const t = e.target, s = cur(); if (t.tagName === 'SELECT') return;
+  if (t.dataset.weapon) { const w = s.weapons[+t.dataset.i]; if (w) { w[t.dataset.weapon] = t.value; save(); renderExport(); } return; }
+  if (t.dataset.armor) { s.armor[t.dataset.armor] = t.dataset.armor === 'reduction' ? Math.max(0, parseInt(t.value) || 0) : t.value; save(); renderExport(); return; }
   if (t.dataset.f) { s[t.dataset.f] = t.value; if (t.dataset.f === 'name') renderTabs(); }
   else if (t.dataset.l) { const it = s[t.dataset.l][+t.dataset.i], k = t.dataset.k; if (k.startsWith('o.')) it.o[k.slice(2)] = t.value; else it[k] = t.value; }
   else return;
@@ -375,6 +414,8 @@ document.addEventListener('input', e => {
 // Cellules numériques : valeur tapée (validée à la sortie du champ ou par Entrée)
 document.addEventListener('change', e => {
   const t = e.target;
+  if (t.dataset.weapon) { const w = cur().weapons[+t.dataset.i]; if (w) w[t.dataset.weapon] = t.value; return commit(); }
+  if (t.dataset.armor === 'reduction') { cur().armor.reduction = Math.max(0, parseInt(t.value) || 0); return commit(); }
   if (t.tagName === 'SELECT' && t.dataset.l) { cur()[t.dataset.l][+t.dataset.i][t.dataset.k] = t.value; return commit(); } // type / caractéristique d'une card
   if (!t.classList.contains('cell')) return;
   const v = parseInt(t.value);
@@ -417,7 +458,10 @@ function navigate(t, key) {
 document.addEventListener('click', e => {
   const b = e.target.closest('button'), s = cur(); if (!b) return;
   const d = b.dataset; let touch = true; // touch = false : simple navigation, la fiche n'est pas modifiée
-  if (d.step) { stepCell(d.step, +d.d); }
+  if (d.collapse !== undefined) { const section = b.closest('.section'), body = section && section.querySelector(':scope > .section-content'); if (!body) return; body.hidden = !body.hidden; const closed = body.hidden; b.textContent = closed ? '+' : '−'; b.setAttribute('aria-expanded', String(!closed)); b.setAttribute('aria-label', closed ? 'Déplier cette section' : 'Replier cette section'); localStorage.setItem('coia-section-' + d.collapse, closed ? 'closed' : 'open'); return; }
+  else if (b.id === 'addWeapon') { s.weapons.push(blankWeapon()); }
+  else if (d.weaponDel !== undefined) { s.weapons.splice(+d.weaponDel, 1); }
+  else if (d.step) { stepCell(d.step, +d.d); }
   else if (d.lvl) { const [k, id] = d.lvl.split(':'); if (k === 'carac') { if (s.carac[id] < NATURES[s.nature].gameMax) s.carac[id]++; } else { s.fund[id].max++; s.fund[id].cur++; } }
   else if (d.reset) s.mod[d.reset] = 0;
   else if (d.cf) cardFilter = d.cf;
@@ -477,4 +521,5 @@ $('importFile').addEventListener('change', e => { // l'import (une fiche ou un e
   }).catch(() => alert("Ce fichier n'est pas une fiche valide.")).finally(() => { e.target.value = ''; });
 });
 
+setupCollapsibleSections();
 render();

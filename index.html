@@ -59,11 +59,22 @@
 
     <section class="section">
       <div class="section-head"><h2>04 — Combat et toucher</h2><p>Bonus, chance et classes de toucher</p></div>
-      <div class="combat-grid">
-        <article class="combat-card"><label for="hit">Bonus de toucher (Agilité)</label><input id="hit" readonly></article>
-        <article class="combat-card"><label for="damage">Bonus de dégâts (Force)</label><input id="damage" readonly></article>
-        <article class="combat-card"><label for="chance">Chance (1 à 10)</label><div class="row"><input class="cell" data-cell="chance" id="chance" type="number" min="1" max="10"><button type="button" id="rollChance" title="Lancer un d10" aria-label="Lancer un d10">🎲</button></div></article>
-        <article class="combat-card"><label for="initiative">Initiative</label><input id="initiative" readonly></article>
+      <div class="combat-top">
+        <div class="combat-grid">
+          <article class="combat-card"><label for="hit">Bonus de toucher (Agilité)</label><input id="hit" readonly></article>
+          <article class="combat-card"><label for="damage">Bonus de dégâts (Force)</label><input id="damage" readonly></article>
+          <article class="combat-card"><label for="chance">Chance (1 à 10)</label><div class="row"><input class="cell" data-cell="chance" id="chance" type="number" min="1" max="10"><button type="button" id="rollChance" title="Lancer un d10" aria-label="Lancer un d10">🎲</button></div></article>
+          <article class="combat-card"><label for="initiative">Initiative</label><input id="initiative" readonly></article>
+        </div>
+        <aside class="equipment-panel" aria-label="Armes et armure">
+          <div class="equipment-heading"><h3>Armes</h3><button type="button" id="addWeapon" class="mini-add">+ Arme</button></div>
+          <div id="weapons" class="weapons-list"></div>
+          <div class="armor-block">
+            <h3>Armure</h3>
+            <label class="field">Type d’armure<input id="armorType" data-armor="type" placeholder="Ex. cuir, cotte de mailles"></label>
+            <label class="field">Réduction de dégâts supplémentaire<input id="armorReduction" data-armor="reduction" type="number" min="0" step="1" inputmode="numeric"></label>
+          </div>
+        </aside>
       </div>
       <div class="touch-panel" style="margin-top:10px">
         <div class="touch-title">Classes de toucher</div>

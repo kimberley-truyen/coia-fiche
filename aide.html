@@ -23,11 +23,30 @@
   .quick ol { margin:0; padding-left:24px; font-size:17px; }
   .quick li { margin:8px 0; }
   .quick small { color:var(--muted); font-size:14px; }
+  .toolbar { display:flex; flex-wrap:wrap; gap:10px; align-items:center; margin:0 0 14px; }
+  .export-pdf { appearance:none; border:1px solid #7a5a1e; border-radius:9px; background:#7a5a1e; color:#fffdf8; padding:9px 14px; font:600 15px/1.3 "Segoe UI",Arial,sans-serif; cursor:pointer; }
+  .export-pdf:hover { background:#624716; }
+  .export-note { color:var(--muted); font-size:13px; }
+  @media print {
+    @page { size:auto; margin:15mm 14mm; }
+    body { padding:0; margin:0; background:#fff; color:#222; font-size:11pt; line-height:1.4; }
+    main { max-width:none; margin:0; padding:0; border:0; border-radius:0; background:#fff; }
+    .toolbar, .back { display:none !important; }
+    h1 { font-size:22pt; }
+    h2 { font-size:15pt; margin-top:18pt; break-after:avoid; }
+    p, li { break-inside:avoid; }
+    .box, .quick { break-inside:avoid; background:#fff; }
+    a { color:#624716; text-decoration:underline; }
+  }
 </style>
 </head>
 <body>
 <main>
-  <a class="back" href="index.html">← Retour à la fiche</a>
+  <div class="toolbar">
+    <a class="back" href="index.html">← Retour à la fiche</a>
+    <button class="export-pdf" id="exportPdf" type="button">Exporter en PDF</button>
+    <span class="export-note">Ouvre la fenêtre d’impression : choisis « Enregistrer au format PDF ».</span>
+  </div>
   <h1>Aide de jeu : retrouver sa fiche</h1>
   <div class="quick">
     <h2>À faire à chaque séance</h2>
@@ -82,11 +101,21 @@
   </ol>
   <p>Le bouton <strong>Restaurer</strong> te ramène à la fiche telle qu'elle était quand tu l'as ouverte la dernière fois (utile après une fausse manœuvre).</p>
 
-  <h2>6. Plusieurs personnages</h2>
+  <h2>6. Combat : armes et armure</h2>
+  <ul>
+    <li>Dans <strong>Armes</strong>, clique sur <strong>+ Arme</strong> pour ajouter une arme, puis renseigne son nom, ses dés de dégâts, sa portée et son statut magique.</li>
+    <li>Le statut magique reste modifiable à tout moment, même en cours de partie ou après un Level Up.</li>
+    <li>Dans <strong>Armure</strong>, indique librement le type d’armure et la réduction de dégâts supplémentaire.</li>
+    <li>Les grandes sections peuvent être repliées séparément avec le bouton <strong>− / +</strong> à droite de leur titre. Leur état est conservé dans ce navigateur.</li>
+  </ul>
+
+  <h2>7. Plusieurs personnages</h2>
   <p>La liste à gauche (ou en haut sur téléphone) contient tes fiches. « + Nouvelle fiche » en crée une, « Importer » en ouvre une depuis un fichier, la croix ✕ ferme une fiche <strong>et la supprime de cet appareil</strong> : exporte-la avant.</p>
 </main>
 <script>
   // Le MJ colle ici le lien du dossier Drive partagé (entre les guillemets). Laisser vide tant qu'il n'existe pas.
+  document.getElementById('exportPdf').addEventListener('click', () => window.print());
+
   const LIEN_DRIVE = 'https://drive.google.com/drive/folders/1nUZcIhmO85K1fo0zMs_XKZ4BUqSYp_VO';
   const drive = document.getElementById('driveLink');
   if (LIEN_DRIVE) { drive.href = LIEN_DRIVE; drive.target = '_blank'; drive.rel = 'noopener'; }

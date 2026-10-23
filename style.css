@@ -205,3 +205,30 @@ body.phase3 .p3 { display:inline-block; }
 .linkbtn { font:inherit; font-size:13px; color:var(--ink); text-decoration:none; border:1px solid var(--line); border-radius:999px; padding:8px 14px; background:var(--white); }
 .hint.warn, #exportInfo.warn { color:var(--ink); font-weight:700; }
 @media print { .warn-bar, .linkbtn { display:none !important; } }
+
+/* ---- v9 : panneaux repliables, armes et armure ---- */
+.section-head { align-items:center; }
+.section-head h2 { flex:1; min-width:0; }
+.collapse-toggle { flex:none; width:30px; height:30px; padding:0; border-radius:8px; font-size:19px; line-height:1; color:var(--muted); }
+.section-content[hidden] { display:none !important; }
+.combat-top { display:grid; grid-template-columns:minmax(0, 1fr) minmax(245px, 0.72fr); gap:10px; align-items:stretch; }
+.combat-grid { min-width:0; }
+.equipment-panel { background:var(--panel); border:1px solid var(--line); border-radius:13px; padding:12px; display:flex; flex-direction:column; gap:9px; min-width:0; }
+.equipment-heading, .weapon-title-row { display:flex; align-items:center; gap:7px; }
+.equipment-heading { justify-content:space-between; }
+.equipment-panel h3 { margin:0; font-family:var(--serif); font-size:16px; font-weight:600; }
+.mini-add { padding:5px 9px; font-size:11px; white-space:nowrap; }
+.weapons-list { display:grid; gap:8px; }
+.weapon-item { background:var(--white); border:1px solid var(--line); border-radius:10px; padding:8px; display:grid; gap:7px; }
+.weapon-name { flex:1; min-width:0; width:100%; font:inherit; font-size:13px; color:var(--ink); background:transparent; border:0; border-bottom:1px solid var(--line); padding:5px 2px; }
+.delete-weapon { padding:3px 7px; font-size:12px; }
+.weapon-fields { display:grid; grid-template-columns:1fr 1fr; gap:7px; }
+.weapon-fields .field:last-child { grid-column:1 / -1; }
+.weapon-fields .field input, .weapon-fields .field select { min-width:0; width:100%; }
+.armor-block { border-top:1px solid var(--line); padding-top:9px; display:grid; gap:7px; }
+.armor-block h3 { margin-bottom:1px; }
+.armor-block .field input { min-width:0; width:100%; }
+.no-weapons { margin:0; }
+@media (max-width: 900px) { .combat-top { grid-template-columns:1fr; } .equipment-panel { min-height:0; } }
+@media (max-width: 520px) { .weapon-fields { grid-template-columns:1fr; } .weapon-fields .field:last-child { grid-column:auto; } }
+@media print { .collapse-toggle, .mini-add, .delete-weapon { display:none !important; } .section-content[hidden] { display:block !important; } }
