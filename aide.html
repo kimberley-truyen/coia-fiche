@@ -1,0 +1,96 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Coïa — Aide de jeu : retrouver sa fiche</title>
+<style>
+  :root { --paper:#f6f1e6; --ink:#3c3028; --muted:#766d62; --gold:#c9a95c; --line:#e0d5bd; --white:#fffdf8; }
+  * { box-sizing:border-box; }
+  body { margin:0; background:#e9e2d5; color:var(--ink); font:16px/1.55 "Segoe UI",Arial,sans-serif; padding:16px; }
+  main { max-width:760px; margin:0 auto; background:var(--paper); border:1px solid var(--line); border-radius:18px; padding:20px 20px 26px; }
+  h1 { font:bold 26px Georgia,serif; margin:0 0 4px; }
+  h2 { font:bold 19px Georgia,serif; margin:26px 0 8px; border-bottom:2px solid var(--gold); padding-bottom:4px; }
+  p, li { margin:6px 0; }
+  .lead { color:var(--muted); margin-bottom:14px; }
+  .box { background:var(--white); border:1px solid var(--line); border-left:5px solid var(--gold); border-radius:10px; padding:10px 14px; margin:12px 0; }
+  .ko { border-left-color:#b5523d; }
+  a { color:#7a5a1e; }
+  ul, ol { padding-left:22px; }
+  .back { display:inline-block; margin-bottom:14px; }
+  .quick { background:var(--white); border:2px solid var(--gold); border-radius:14px; padding:12px 16px 14px; margin:14px 0 8px; }
+  .quick h2 { border:0; margin:0 0 6px; font-size:20px; }
+  .quick ol { margin:0; padding-left:24px; font-size:17px; }
+  .quick li { margin:8px 0; }
+  .quick small { color:var(--muted); font-size:14px; }
+</style>
+</head>
+<body>
+<main>
+  <a class="back" href="index.html">← Retour à la fiche</a>
+  <h1>Aide de jeu : retrouver sa fiche</h1>
+  <div class="quick">
+    <h2>À faire à chaque séance</h2>
+    <ol>
+      <li>Ouvre ta fiche avec <a href="index.html">ce lien</a>.<br><small>Toujours le même navigateur, jamais en navigation privée.</small></li>
+      <li>Tu as changé d'appareil, ou ta fiche a disparu ? Récupère ton dernier export dans <a id="driveLink" href="#">le dossier Drive partagé</a>, puis bouton <strong>Importer</strong>.</li>
+      <li>Joue : la fiche s'enregistre toute seule.</li>
+      <li><strong>N'oublie pas d'exporter ta fiche à la fin de la séance !</strong><br><small>Bouton Exporter, puis dépose le fichier dans ton dossier Drive en remplaçant l'ancien.</small></li>
+      <li>Va dormir tranquille : ta fiche est en sécurité. 😴</li>
+    </ol>
+  </div>
+  <p class="lead">Les détails ci-dessous servent de rappel : à lire une fois.</p>
+
+  <h2>1. Où est enregistrée ma fiche ?</h2>
+  <p>Dans le navigateur de l'appareil que tu utilises, <strong>sans compte et sans envoi sur Internet</strong>. Il n'y a pas de bouton « Enregistrer » : la fiche se sauvegarde toute seule à chaque modification. Tu peux fermer l'onglet quand tu as fini.</p>
+  <div class="box"><strong>À retenir :</strong> ta fiche reste sur <em>cet appareil</em>, dans <em>ce navigateur</em>, pour <em>cette adresse</em>. Pour la retrouver, rouvre toujours le même lien, avec le même navigateur, sur le même appareil.</div>
+
+  <h2>2. Ouvrir et fermer sa fiche</h2>
+  <ol>
+    <li>Ouvre le lien donné par ton MJ (ajoute-le aux favoris, voir plus bas).</li>
+    <li>Joue, modifie : tout est enregistré tout de suite. En bas de page, la ligne « Dernier : … » indique le dernier enregistrement.</li>
+    <li>Pour fermer : ferme simplement l'onglet. Si tu viens de modifier quelque chose, attends une seconde avant de fermer.</li>
+  </ol>
+  <div class="box ko"><strong>À éviter :</strong>
+    <ul>
+      <li>La <strong>navigation privée</strong> : tout est effacé à la fermeture.</li>
+      <li><strong>Changer de navigateur</strong> (Chrome, Safari, Firefox… ont chacun leurs fiches).</li>
+      <li>Effacer l'historique en cochant « cookies et données de sites » : cela supprime ta fiche.</li>
+      <li>Ouvrir une copie du lien à une autre adresse : tes fiches ne s'y trouveront pas.</li>
+    </ul>
+  </div>
+
+  <h2>3. Ajouter la fiche à l'écran d'accueil</h2>
+  <p><strong>iPhone / iPad (Safari)</strong> : bouton Partager (carré avec une flèche) → « Sur l'écran d'accueil » → Ajouter.</p>
+  <p><strong>Android (Chrome)</strong> : menu ⋮ → « Ajouter à l'écran d'accueil » (ou « Installer l'application »).</p>
+  <p><strong>Ordinateur</strong> : ajoute la page aux favoris (Ctrl + D), ou dans Chrome / Edge : menu → « Installer » si l'option est proposée.</p>
+  <div class="box"><strong>Important sur iPhone :</strong> l'icône de l'écran d'accueil peut avoir <em>son propre espace de stockage</em>, séparé de Safari. Choisis une seule façon d'ouvrir ta fiche (l'icône de préférence) et garde-la. Safari peut aussi effacer les données d'un site que tu n'ouvres pas pendant une semaine : c'est une raison de plus d'utiliser l'icône et d'exporter régulièrement.</div>
+
+  <h2>4. Sauvegarder (exporter) : la vraie sécurité</h2>
+  <ul>
+    <li><strong>Exporter</strong> : télécharge la fiche affichée (un petit fichier .json).</li>
+    <li><strong>Tout exporter</strong> : télécharge toutes les fiches ouvertes en un seul fichier.</li>
+    <li>Range ce fichier dans ton Drive, iCloud, ou envoie-le-toi par mail ou messagerie.</li>
+    <li>Un bandeau d'avertissement apparaît si tu as des modifications non exportées depuis plus de 24 h, et ton navigateur peut te prévenir avant de fermer. Exporte après chaque séance ou chaque Level Up.</li>
+  </ul>
+
+  <h2>5. Changer d'appareil ou retrouver une fiche perdue</h2>
+  <ol>
+    <li>Sur l'ancien appareil : <strong>Exporter</strong> (ou <strong>Tout exporter</strong>).</li>
+    <li>Envoie le fichier sur le nouvel appareil (Drive, mail, messagerie…).</li>
+    <li>Sur le nouvel appareil : ouvre le lien, bouton <strong>Importer</strong>, choisis le fichier. La fiche s'ouvre dans un nouvel onglet de la liste à gauche.</li>
+  </ol>
+  <p>Le bouton <strong>Restaurer</strong> te ramène à la fiche telle qu'elle était quand tu l'as ouverte la dernière fois (utile après une fausse manœuvre).</p>
+
+  <h2>6. Plusieurs personnages</h2>
+  <p>La liste à gauche (ou en haut sur téléphone) contient tes fiches. « + Nouvelle fiche » en crée une, « Importer » en ouvre une depuis un fichier, la croix ✕ ferme une fiche <strong>et la supprime de cet appareil</strong> : exporte-la avant.</p>
+</main>
+<script>
+  // Le MJ colle ici le lien du dossier Drive partagé (entre les guillemets). Laisser vide tant qu'il n'existe pas.
+  const LIEN_DRIVE = '';
+  const drive = document.getElementById('driveLink');
+  if (LIEN_DRIVE) { drive.href = LIEN_DRIVE; drive.target = '_blank'; drive.rel = 'noopener'; }
+  else drive.replaceWith('le dossier Drive partagé (lien à demander à ton MJ)');
+</script>
+</body>
+</html>

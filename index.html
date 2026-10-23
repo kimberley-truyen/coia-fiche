@@ -1,0 +1,165 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Coïa — Fiche de personnage</title>
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+<div class="app">
+  <nav class="sidebar" id="sheets" aria-label="Fiches de personnages"></nav>
+  <main class="sheet">
+    <div class="warn-bar hidden" id="exportWarn" role="alert"><span id="exportWarnText"></span><button type="button" id="exportAllWarn">Tout exporter</button></div>
+    <header class="hero">
+      <div class="hero-line">
+        <div class="identity">
+          <div class="eyebrow">Coïa · Fiche de personnage</div>
+          <input class="name-input" id="characterName" data-f="name" placeholder="Nom du personnage" aria-label="Nom du personnage">
+        </div>
+        <div class="nature-wrap">
+          <label for="nature">Nature</label>
+          <select id="nature" class="nature-select">
+            <option value="neutre">Neutre</option><option value="prudent">Prudent</option><option value="greedy">Greedy</option>
+          </select>
+        </div>
+        <div class="nature-wrap"><label for="theme">Thème</label><select id="theme" class="nature-select"></select></div>
+        <div class="nature-wrap"><label for="font">Police</label><select id="font" class="nature-select"></select></div>
+      </div>
+    </header>
+
+    <section class="section">
+      <div class="section-head"><h2>01 — Identité</h2><p id="phaseLabel"></p></div>
+      <div class="panel grid2">
+        <label class="field">Nom du joueur<input data-f="player"></label>
+        <label class="field">Âge<input data-f="age"></label>
+        <label class="field">Espèce ou peuple<input data-f="species"></label>
+        <label class="field">Métier ou origine<input data-f="origin"></label>
+        <label class="field">Niveau<input class="cell" data-cell="level" id="level" type="number" min="1"></label>
+        <label class="field">Caractéristique d'incantation<select id="incant"></select></label>
+        <label class="field">Élément(s)<input data-f="element" placeholder="ex. feu"></label>
+        <label class="field full">Apparence (taille, description)<textarea rows="2" data-f="look"></textarea></label>
+      </div>
+    </section>
+
+    <section class="section">
+      <div class="section-head"><h2>02 — Caractéristiques</h2><p>Profil de caractéristiques</p></div>
+      <div class="stats-grid" id="stats"></div>
+      <div class="summary-grid">
+        <div class="summary-card" id="pointsCard"><span id="pointsLabel">Points répartis</span><strong id="points"></strong></div>
+        <div class="summary-card"><span>Réussite moyenne au test</span><strong id="success"></strong></div>
+        <div class="summary-card"><span>Total des caractéristiques</span><strong id="total"></strong></div>
+      </div>
+    </section>
+
+    <section class="section">
+      <div class="section-head"><h2>03 — Fondamentaux</h2><p>Ressources et capacités</p></div>
+      <div class="fundamentals" id="funds"></div>
+    </section>
+
+    <section class="section">
+      <div class="section-head"><h2>04 — Combat et toucher</h2><p>Bonus, chance et classes de toucher</p></div>
+      <div class="combat-grid">
+        <article class="combat-card"><label for="hit">Bonus de toucher (Agilité)</label><input id="hit" readonly></article>
+        <article class="combat-card"><label for="damage">Bonus de dégâts (Force)</label><input id="damage" readonly></article>
+        <article class="combat-card"><label for="chance">Chance (1 à 10)</label><div class="row"><input class="cell" data-cell="chance" id="chance" type="number" min="1" max="10"><button type="button" id="rollChance" title="Lancer un d10" aria-label="Lancer un d10">🎲</button></div></article>
+        <article class="combat-card"><label for="initiative">Initiative</label><input id="initiative" readonly></article>
+      </div>
+      <div class="touch-panel" style="margin-top:10px">
+        <div class="touch-title">Classes de toucher</div>
+        <div class="touch-grid">
+          <div class="touch-cell"><span>C1</span><input readonly aria-label="Classe 1"><small class="dmg"></small></div>
+          <div class="touch-cell"><span>C2</span><input readonly aria-label="Classe 2"><small class="dmg"></small></div>
+          <div class="touch-cell"><span>C3</span><input readonly aria-label="Classe 3"><small class="dmg"></small></div>
+          <div class="touch-cell"><span>C4</span><input readonly aria-label="Classe 4"><small class="dmg"></small></div>
+          <div class="touch-cell"><span>C5</span><input readonly aria-label="Classe 5"><small class="dmg"></small></div>
+        </div>
+      </div>
+    </section>
+
+    <section class="section">
+      <div class="section-head"><h2>05 — Sous-compétences</h2><p>Moyenne de deux caractéristiques</p></div>
+      <div class="sub-grid" id="subs"></div>
+    </section>
+
+    <section class="section">
+      <div class="section-head"><h2>06 — Sorts signature</h2><p>Sorts clés du personnage</p></div>
+      <div class="items" id="spells"></div>
+      <div class="hint-line add" id="spellsHint"></div>
+      <button type="button" class="add" id="addSpell">+ Sort signature</button>
+    </section>
+
+    <section class="section">
+      <div class="section-head"><h2>07 — Compétences</h2><p>Niveaux 1 à 3 ; le niveau 3 devient un passif</p></div>
+      <div class="items" id="skills"></div>
+      <div class="hint-line add" id="skillsHint"></div>
+      <button type="button" class="add" id="addSkill">+ Compétence</button>
+    </section>
+
+    <section class="section">
+      <div class="section-head"><h2>08 — Désavantages</h2><p>Sans niveau, sans coût</p></div>
+      <div class="items" id="flaws"></div>
+      <button type="button" class="add" id="addFlaw">+ Désavantage</button>
+    </section>
+
+    <section class="section">
+      <div class="section-head"><h2>09 — Inventaire et notes</h2><p>Texte libre</p></div>
+      <div class="panel grid2">
+        <div class="field">Argent<div class="coins" id="coins"></div></div>
+        <label class="field">Inventaire<textarea rows="4" data-f="inventory"></textarea></label>
+        <label class="field">Notes libres<textarea rows="4" data-f="notes"></textarea></label>
+      </div>
+    </section>
+
+    <section class="section">
+      <div class="section-head"><h2>10 — Récit</h2><p>Histoire, personnalité, objectifs, liens</p></div>
+      <div class="panel cols2">
+        <div class="stack">
+          <label class="field">Histoire (lore)<textarea rows="5" data-f="lore"></textarea></label>
+          <label class="field">Objectifs<textarea rows="5" data-f="goals"></textarea></label>
+        </div>
+        <div class="stack">
+          <label class="field">Personnalité<textarea rows="5" data-f="personality"></textarea></label>
+          <label class="field">Liens (alliés, ennemis)<textarea rows="5" data-f="links"></textarea></label>
+        </div>
+      </div>
+    </section>
+
+    <section class="section">
+      <div class="section-head"><h2>11 — Traits et défauts du groupe</h2><p>Évolue au fil des sessions</p></div>
+      <div class="panel grid2">
+        <label class="field">Traits remarquables<textarea rows="4" data-f="traits"></textarea></label>
+        <label class="field">Défauts (re)connus<textarea rows="4" data-f="defects"></textarea></label>
+      </div>
+    </section>
+
+    <section class="section">
+      <div class="section-head"><h2>12 — Cards</h2><p>Manœuvres et sorts utilisables</p></div>
+      <div class="toolbar">
+        <input id="cardSearch" type="search" placeholder="Rechercher une card…" aria-label="Rechercher une card">
+        <button class="chip on" data-cf="all">Tous</button><button class="chip" data-cf="maneuver">Manœuvres</button><button class="chip" data-cf="mentale">Sorts MM</button><button class="chip" data-cf="physique">Sorts MP</button>
+        <span class="small" id="cardCount"></span>
+      </div>
+      <div class="items" id="cards"></div>
+      <button type="button" id="addCard" style="margin-top:10px">+ Card</button>
+    </section>
+
+    <footer class="footer">
+      <span class="hint"><span id="saveInfo"></span><br><span id="exportInfo"></span></span>
+      <div class="actions">
+        <button type="button" class="primary" id="validate">Valider</button>
+        <button type="button" id="levelUp">Level Up</button>
+        <button type="button" id="restore">Restaurer</button>
+        <button type="button" id="export">Exporter</button>
+        <button type="button" id="exportAll">Tout exporter</button>
+        <button type="button" onclick="window.print()">Imprimer / PDF</button>
+        <a class="linkbtn" href="aide.html" target="_blank" rel="noopener">Aide</a>
+        <input type="file" id="importFile" accept="application/json,.json" class="hidden">
+      </div>
+    </footer>
+  </main>
+</div>
+<script src="data.js"></script>
+<script src="script.js"></script>
+</body>
+</html>
