@@ -294,3 +294,10 @@ body.phase3 .p3 { display:inline-block; }
 .ccell { display:flex; align-items:center; gap:4px; }
 .ccell input { flex:1; min-width:0; width:100%; text-align:center; font-size:14px; padding:5px 4px; }
 .ccell button { padding:2px 9px; flex:none; }
+
+.footer button,
+.footer a.linkbtn {
+    font-size: 10px;
+    padding: 5px 8px;
+    min-height: auto;
+}
