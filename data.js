@@ -43,8 +43,9 @@ const SUBSKILLS = [
 // Cards : types, champs éventuels (ajoutés seulement si le joueur en a besoin)
 const CARD_TYPES = { mentale: 'Magie mentale', physique: 'Magie physique', manoeuvre: 'Manœuvre' };
 const CARD_OPTIONAL = {
-  perTurn: { label: 'Coût par tour', num: true }, area: { label: "Zone d'effet" }, duration: { label: 'Durée (tours)', num: true },
-  damage: { label: 'Dégâts' }, effect: { label: 'Effet additionnel' }, damage2: { label: 'Dégâts additionnels' }
+  perTurn: { label: 'Coût par tour', num: true }, area: { label: "Zone d'effet" }, duration: { label: 'Durée (tours)' }, // durée en texte : 3, 1d4…
+  damage: { label: 'Dégâts' }, effect: { label: 'Effet additionnel' }, damage2: { label: 'Dégâts additionnels' },
+  target: { label: 'Vise un ennemi', flag: true } // pas de champ de saisie : la réussite se joue sur la save de l'ennemi
 };
 // Style de la fiche
 const THEMES = [{ id: 'parchemin', label: 'Parchemin' }, { id: 'nuit', label: 'Nuit' }, { id: 'foret', label: 'Forêt' }, { id: 'ocean', label: 'Océan' }, { id: 'rubis', label: 'Rubis' }, { id: 'nature', label: 'Nature' }];

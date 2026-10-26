@@ -42,9 +42,10 @@
 </head>
 <body>
 <main>
-  <div style="display: flex; justify-content: space-between; align-items: center; width: 100%;">
-    <a href="index.html">← Retour sur la fiche</a>
+  <div class="toolbar">
+    <a class="back" href="index.html">← Retour à la fiche</a>
     <button class="export-pdf" id="exportPdf" type="button">Exporter en PDF</button>
+    <span class="export-note">Ouvre la fenêtre d’impression : choisis « Enregistrer au format PDF ».</span>
   </div>
   <h1>Aide de jeu : retrouver sa fiche</h1>
   <div class="quick">
@@ -53,7 +54,7 @@
       <li>Ouvre ta fiche avec <a href="index.html">ce lien</a>.<br><small>Toujours le même navigateur, jamais en navigation privée.</small></li>
       <li>Tu as changé d'appareil, ou ta fiche a disparu ? Récupère ton dernier export dans <a id="driveLink" href="#">le dossier Drive partagé</a>, puis bouton <strong>Importer</strong>.</li>
       <li>Joue : la fiche s'enregistre toute seule.</li>
-      <li><strong>N'oublie pas d'exporter ta fiche à la fin de la séance !</strong><br><small>Bouton Exporter (ne change pas le nom du fichier !), puis dépose le fichier dans le dossier Drive partagé en remplaçant l'ancien.</small></li>
+      <li><strong>N'oublie pas d'exporter ta fiche à la fin de la séance !</strong><br><small>Bouton Exporter, puis dépose le fichier dans ton dossier Drive en remplaçant l'ancien.</small></li>
       <li>Va dormir tranquille : ta fiche est en sécurité. 😴</li>
     </ol>
   </div>
@@ -104,18 +105,18 @@
   <ul>
     <li>Dans <strong>Armes</strong>, clique sur <strong>+ Arme</strong> pour ajouter une arme, puis renseigne son nom, ses dés de dégâts, sa portée et son statut magique.</li>
     <li>Le statut magique reste modifiable à tout moment, même en cours de partie ou après un Level Up.</li>
-    <li>Dans <strong>Armure</strong>, indique librement le type d’armure et la réduction de dégâts supplémentaire.</li>
+    <li>Dans <strong>Armure</strong>, indique librement le type d’armure et la réduction de dégâts (une valeur ou un dé, par exemple 1d8).</li>
     <li>Les grandes sections peuvent être repliées séparément avec le bouton <strong>− / +</strong> à droite de leur titre. Leur état est conservé dans ce navigateur.</li>
   </ul>
 
   <h2>7. Plusieurs personnages</h2>
-  <p>La liste à gauche (ou en haut sur téléphone) contient tes fiches. « + Nouvelle fiche » en crée une, « Importer » en ouvre une depuis un fichier, la croix ✕ ferme une fiche <strong>et la supprime de cet appareil</strong> : exporte-la avant.</p>
+  <p>La liste à gauche (ou en haut sur téléphone) contient tes fiches ; le bouton ☰ en haut de la fiche l'affiche ou la masque pour laisser toute la place à la fiche. « + Nouvelle fiche » en crée une, « Importer » en ouvre une depuis un fichier, la croix ✕ ferme une fiche <strong>et la supprime de cet appareil</strong> : exporte-la avant.</p>
 </main>
 <script>
   // Le MJ colle ici le lien du dossier Drive partagé (entre les guillemets). Laisser vide tant qu'il n'existe pas.
   document.getElementById('exportPdf').addEventListener('click', () => window.print());
 
-  const LIEN_DRIVE = 'https://drive.google.com/drive/folders/1nUZcIhmO85K1fo0zMs_XKZ4BUqSYp_VO';
+  const LIEN_DRIVE = '';
   const drive = document.getElementById('driveLink');
   if (LIEN_DRIVE) { drive.href = LIEN_DRIVE; drive.target = '_blank'; drive.rel = 'noopener'; }
   else drive.replaceWith('le dossier Drive partagé (lien à demander à ton MJ)');

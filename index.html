@@ -10,9 +10,11 @@
 <div class="app">
   <nav class="sidebar" id="sheets" aria-label="Fiches de personnages"></nav>
   <main class="sheet">
+    <aside class="float-points hidden" id="floatPoints" aria-live="polite"><strong>Points restants</strong><div>Caractéristiques : <b id="fpX"></b></div><div>Compétences et sorts : <b id="fpY"></b></div></aside>
     <div class="warn-bar hidden" id="exportWarn" role="alert"><span id="exportWarnText"></span><button type="button" id="exportAllWarn">Tout exporter</button></div>
     <header class="hero">
       <div class="hero-line">
+        <button type="button" id="navToggle" class="nav-toggle" aria-label="Afficher ou masquer la liste des fiches" aria-expanded="true">☰</button>
         <div class="identity">
           <div class="eyebrow">Coïa · Fiche de personnage</div>
           <input class="name-input" id="characterName" data-f="name" placeholder="Nom du personnage" aria-label="Nom du personnage">
@@ -59,22 +61,20 @@
 
     <section class="section">
       <div class="section-head"><h2>04 — Combat et toucher</h2><p>Bonus, chance et classes de toucher</p></div>
-      <div class="combat-top">
-        <div class="combat-grid">
-          <article class="combat-card"><label for="hit">Bonus de toucher (Agilité)</label><input id="hit" readonly></article>
-          <article class="combat-card"><label for="damage">Bonus de dégâts (Force)</label><input id="damage" readonly></article>
-          <article class="combat-card"><label for="chance">Chance (1 à 10)</label><div class="row"><input class="cell" data-cell="chance" id="chance" type="number" min="1" max="10"><button type="button" id="rollChance" title="Lancer un d10" aria-label="Lancer un d10">🎲</button></div></article>
-          <article class="combat-card"><label for="initiative">Initiative</label><input id="initiative" readonly></article>
-        </div>
-        <aside class="equipment-panel" aria-label="Armes et armure">
-          <div class="equipment-heading"><h3>Armes</h3><button type="button" id="addWeapon" class="mini-add">+ Arme</button></div>
-          <div id="weapons" class="weapons-list"></div>
-          <div class="armor-block">
-            <h3>Armure</h3>
-            <label class="field">Type d’armure<input id="armorType" data-armor="type" placeholder="Ex. cuir, cotte de mailles"></label>
-            <label class="field">Réduction de dégâts supplémentaire<input id="armorReduction" data-armor="reduction" type="number" min="0" step="1" inputmode="numeric"></label>
-          </div>
-        </aside>
+      <div class="combat-grid combat-line">
+        <article class="combat-card"><label for="hit">Bonus de toucher (Agilité)</label><input id="hit" readonly></article>
+        <article class="combat-card"><label for="damage">Bonus de dégâts (Force)</label><input id="damage" readonly></article>
+        <article class="combat-card"><label for="chance">Chance (1 à 10)</label><div class="row"><input class="cell" data-cell="chance" id="chance" type="number" min="1" max="10"><button type="button" id="rollChance" title="Lancer un d10" aria-label="Lancer un d10">🎲</button></div></article>
+        <article class="combat-card"><label for="initiative">Initiative</label><input id="initiative" readonly></article>
+      </div>
+      <div class="equip">
+        <div class="equip-head"><h3>Armes</h3><button type="button" id="addWeapon" class="mini-add">+ Arme</button></div>
+        <div class="table-wrap"><div class="wtable" id="weapons"></div></div>
+        <div class="equip-head"><h3>Armure</h3></div>
+        <div class="table-wrap"><div class="wtable">
+          <div class="wrow whead"><span>Type d’armure</span><span>Réduction de dégâts</span></div>
+          <div class="wrow"><input id="armorType" data-armor="type" placeholder="ex. cuir, cotte de mailles" aria-label="Type d’armure"><input id="armorReduction" data-armor="reduction" placeholder="ex. 1d8 ou 2" aria-label="Réduction de dégâts"></div>
+        </div></div>
       </div>
       <div class="touch-panel" style="margin-top:10px">
         <div class="touch-title">Classes de toucher</div>
@@ -101,7 +101,7 @@
     </section>
 
     <section class="section">
-      <div class="section-head"><h2>07 — Compétences</h2><p>Niveaux 1 à 3 ; le niveau 3 devient un passif</p></div>
+      <div class="section-head"><h2>07 — Compétences</h2><p>Paliers 1 à 3 ; le palier 3 devient un passif</p></div>
       <div class="items" id="skills"></div>
       <div class="hint-line add" id="skillsHint"></div>
       <button type="button" class="add" id="addSkill">+ Compétence</button>
@@ -115,9 +115,15 @@
 
     <section class="section">
       <div class="section-head"><h2>09 — Inventaire et notes</h2><p>Texte libre</p></div>
-      <div class="panel grid2">
+      <div class="panel stackv">
         <div class="field">Argent<div class="coins" id="coins"></div></div>
-        <label class="field">Inventaire<textarea rows="4" data-f="inventory"></textarea></label>
+        <div class="field">Inventaire
+          <div class="inv3">
+            <textarea rows="5" data-f="inventory" aria-label="Inventaire 1"></textarea>
+            <textarea rows="5" data-f="inventory2" aria-label="Inventaire 2"></textarea>
+            <textarea rows="5" data-f="inventory3" aria-label="Inventaire 3"></textarea>
+          </div>
+        </div>
         <label class="field">Notes libres<textarea rows="4" data-f="notes"></textarea></label>
       </div>
     </section>
