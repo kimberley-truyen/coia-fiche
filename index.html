@@ -150,17 +150,6 @@
       </div>
     </section>
 
-    <section class="section">
-      <div class="section-head"><h2>12 — Cards</h2><p>Manœuvres et sorts utilisables</p></div>
-      <div class="toolbar">
-        <input id="cardSearch" type="search" placeholder="Rechercher une card…" aria-label="Rechercher une card">
-        <button class="chip on" data-cf="all">Tous</button><button class="chip" data-cf="maneuver">Manœuvres</button><button class="chip" data-cf="mentale">Sorts MM</button><button class="chip" data-cf="physique">Sorts MP</button>
-        <span class="small" id="cardCount"></span>
-      </div>
-      <div class="items" id="cards"></div>
-      <button type="button" id="addCard" style="margin-top:10px">+ Card</button>
-    </section>
-
     <footer class="footer">
       <span class="hint"><span id="saveInfo"></span><br><span id="exportInfo"></span></span>
       <div class="actions">
@@ -174,6 +163,18 @@
         <input type="file" id="importFile" accept="application/json,.json" class="hidden">
       </div>
     </footer>
+
+    <section class="section">
+      <div class="section-head"><h2>12 — Cards</h2><p>Manœuvres et sorts utilisables</p></div>
+      <div class="toolbar">
+        <input id="cardSearch" type="search" placeholder="Rechercher une card…" aria-label="Rechercher une card">
+        <button class="chip on" data-cf="all">Tous</button><button class="chip" data-cf="maneuver">Manœuvres</button><button class="chip" data-cf="mentale">Sorts MM</button><button class="chip" data-cf="physique">Sorts MP</button>
+        <span class="small" id="cardCount"></span>
+      </div>
+      <div class="items" id="cards"></div>
+      <button type="button" id="addCard" style="margin-top:10px">+ Card</button>
+    </section>
+    
   </main>
 </div>
 <script src="data.js"></script>
