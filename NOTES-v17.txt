@@ -11,3 +11,6 @@ COÏA — JOURNAL v17
 - Conservation des identifiants des entrées lors des modifications.
 
 Stockage : les entrées et attributs restent dans localStorage, avec les mêmes clés que la v16 pour préserver les données existantes dans le même navigateur et la même origine. Faire une sauvegarde du navigateur avant mise à jour. La migration vers IndexedDB et la synchronisation entre appareils restent à réaliser.
+
+
+Dernière version stable utilisé: v8
