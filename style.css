@@ -248,7 +248,7 @@ body.phase3 .p3 { display:inline-block; }
 .equip { margin-top:12px; display:grid; gap:8px; }
 .equip-head { display:flex; align-items:center; justify-content:space-between; gap:8px; }
 .equip h3 { margin:0; font-family:var(--serif); font-size:16px; font-weight:600; }
-.table-wrap { overflow-x:auto; }
+.table-wrap { overflow-x:auto; width:0; min-width:100%; } /* ne force jamais la largeur de la page : le tableau défile dans son cadre */
 .wtable { min-width:560px; display:grid; gap:6px; }
 .wrow { display:grid; grid-template-columns:minmax(130px,2fr) minmax(110px,1.3fr) minmax(90px,1fr) 84px 34px; gap:6px; align-items:center; }
 .wrow input, .wrow select { min-width:0; width:100%; font:inherit; font-size:13px; color:var(--ink); background:var(--white); border:1px solid var(--line); border-radius:9px; padding:7px 9px; }
@@ -294,3 +294,75 @@ body.phase3 .p3 { display:inline-block; }
 .ccell { display:flex; align-items:center; gap:4px; }
 .ccell input { flex:1; min-width:0; width:100%; text-align:center; font-size:14px; padding:5px 4px; }
 .ccell button { padding:2px 9px; flex:none; }
+
+/* ---- Ajouts v13 ---- */
+/* Correctif téléphone : la fiche ne doit jamais élargir la page */
+@media (max-width: 900px) { .app { align-items:stretch; } }
+.app .sheet { min-width:0; }
+.field, .panel { min-width:0; }
+/* Sous-caractéristiques : toutes les cases sur une seule ligne */
+.sub-grid { display:grid; grid-auto-flow:column; grid-template-columns:none; grid-auto-columns:minmax(104px,1fr); gap:8px; overflow-x:auto; padding-bottom:4px; }
+.sub-card { padding:8px 9px; gap:3px; }
+.sub-card strong { font-size:20px; }
+.sub-card .sub-head { font-size:13px; gap:2px 6px; }
+.sub-card .chip { padding:2px 7px; }
+/* Fondamentaux flottants après la création */
+.sticky-funds { position:sticky; top:8px; z-index:55; background:var(--bg); border-radius:14px; padding:6px 8px 4px; box-shadow:0 6px 16px rgba(0,0,0,.16); margin-bottom:12px; }
+body.phase3 #secFunds .section-head { display:none; }
+body.phase3 #secFunds .section-content[hidden] { display:block !important; }
+.sticky-funds .fundamentals { grid-template-columns:none; grid-auto-flow:column; grid-auto-columns:minmax(112px,1fr); overflow-x:auto; }
+/* Armes et armure : description facultative */
+.wrow { grid-template-columns:minmax(130px,2fr) minmax(110px,1.3fr) minmax(90px,1fr) 84px 70px; }
+.witem { display:grid; gap:4px; }
+.wact { display:flex; gap:4px; justify-content:flex-end; }
+.mini-icon { padding:3px 8px; font-size:12px; }
+.wdesc input { width:100%; font:inherit; font-size:12.5px; color:var(--ink); background:var(--white); border:1px solid var(--line); border-radius:9px; padding:6px 9px; }
+/* Lanceur de dés flottant, à droite */
+.dice-widget { position:fixed; right:10px; top:50%; transform:translateY(-50%); z-index:70; }
+.dice-fab { width:44px; height:44px; border-radius:50%; font-size:22px; line-height:1; padding:0; background:var(--white); border:2px solid var(--gold); box-shadow:0 4px 14px rgba(0,0,0,.2); }
+.dice-panel { position:absolute; right:54px; top:50%; transform:translateY(-50%); width:244px; background:var(--white); color:var(--ink); border:2px solid var(--gold); border-radius:14px; padding:10px 12px; box-shadow:0 10px 28px rgba(0,0,0,.25); display:grid; gap:8px; }
+.dice-row { display:flex; flex-wrap:wrap; gap:5px; align-items:center; }
+.dice-field { display:flex; align-items:center; gap:3px; flex-wrap:nowrap; }
+.dice-field input, .dice-row input { width:46px; font:inherit; font-size:13px; text-align:center; color:var(--ink); background:var(--white); border:1px solid var(--line); border-radius:8px; padding:4px; }
+.dice-field button { padding:2px 8px; }
+.dice-result { display:flex; align-items:baseline; gap:8px; min-height:28px; }
+.dice-result strong { font:bold 26px var(--serif); }
+.dice-history { margin:0; padding-left:20px; font-size:12px; color:var(--muted); }
+@media print { .dice-widget, .sticky-funds { display:none !important; } }
+/* Le bouton des dés ne doit jamais recouvrir les contrôles : marge réservée à droite sur ordinateur, coin bas sur téléphone */
+@media (min-width: 901px) { .app { padding-right:58px; } .dice-widget { right:8px; } }
+@media (max-width: 900px) {
+  .dice-widget { top:auto; bottom:14px; right:10px; transform:none; }
+  .dice-fab { opacity:.92; }
+  .dice-panel { right:0; top:auto; bottom:54px; transform:none; width:min(244px, calc(100vw - 20px)); }
+}
+/* Les éléments atteints au clavier ne passent pas sous les bandeaux collants */
+html:has(body.phase3) { scroll-padding-top:130px; }
+html:has(body.phase1) { scroll-padding-top:70px; }
+.sub-card { display:flex; flex-direction:column; }
+.sub-card .sub-head { min-height:34px; align-content:flex-start; }
+@media (max-width: 520px) {
+  .ctable { min-width:0; grid-template-columns:62px repeat(3,minmax(0,1fr)); gap:6px 4px; }
+  .crow-label { font-size:11.5px; line-height:1.2; }
+  .chead { font-size:10.5px; line-height:1.2; }
+  .ccell { gap:2px; }
+  .ccell button { padding:1px 6px; }
+  .ccell input { padding:4px 1px; font-size:13px; }
+}
+
+/* ---- Ajouts v14 ---- */
+/* Sous-caractéristiques : nom, paires sous le nom (petites), valeur et R en bas */
+.sub-card { display:flex; flex-direction:column; gap:4px; }
+.sub-name { font-size:14px; line-height:1.2; }
+.sub-pairs { display:flex; flex-wrap:wrap; gap:3px; align-items:center; }
+.sub-pairs .small { font-size:10px; letter-spacing:.02em; }
+.sub-pairs .chip { font-size:9.5px; padding:1px 6px; }
+.sub-foot { margin-top:auto; display:flex; justify-content:space-between; align-items:baseline; gap:6px; padding-top:4px; }
+.sub-foot strong { font:bold 22px var(--serif); line-height:1; }
+.sub-foot .small { font-size:11px; }
+/* Panneau des fiches : déplacer, dupliquer */
+.tab[draggable="true"] { cursor:grab; }
+.tab .mv { border:0; background:transparent; padding:6px 5px; color:var(--muted); font-size:11px; }
+.tab .mv:disabled { opacity:.25; }
+.tab .mvh { display:none; }
+@media (max-width: 900px) { .tab .mvv { display:none; } .tab .mvh { display:inline; } }

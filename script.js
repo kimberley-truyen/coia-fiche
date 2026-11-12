@@ -53,24 +53,24 @@ function newSheet(nature = 'neutre') {
     id: uid(), ...Object.fromEntries(TEXT_FIELDS.map(f => [f, ''])), level: 1, incant: '',
     nature, creationNature: nature, phase: 1,
     carac: base, mod: zero(), caracInit: null, caracMax: null, fund: null,
-    coins: { pockets: coin(), reserve: coin() }, skills: [], flaws: [], spells: [], cards: [], weapons: [], armor: { type: '', reduction: '' },
+    coins: { pockets: coin(), reserve: coin() }, skills: [], flaws: [], spells: [], cards: [], weapons: [], armor: { type: '', reduction: '', desc: null },
     subPair: {}, chance: 1, theme: 'parchemin', font: 'classique', savedAt: null, changedAt: null, exportedAt: null, createdAt: new Date().toISOString()
   };
 }
-const blankCard = () => ({ name: '', desc: '', stat: '', type: 'manoeuvre', cast: '', mana: '', range: '', turn: 0, active: false, o: {} });
-const blankSpell = () => ({ id: uid(), name: '', level: 1, d1: '', d2: '', d3: '', d4: '', type: 'mentale', cast: '', mana: '', range: '', turn: 0, active: false, o: {} });
-const blankWeapon = () => ({ id: uid(), name: '', damage: '', range: '', magical: 'no' });
+const blankCard = () => ({ name: '', desc: '', stat: '', type: 'manoeuvre', cast: '', mana: '', range: '', turn: 0, active: false, o: {}, saveStats: [] });
+const blankSpell = () => ({ id: uid(), name: '', level: 1, d1: '', d2: '', d3: '', d4: '', type: 'mentale', cast: '', mana: '', range: '', turn: 0, active: false, o: {}, saveStats: [] });
+const blankWeapon = () => ({ id: uid(), name: '', damage: '', range: '', magical: 'no', desc: null });
 // Complète une fiche ancienne ou importée avec les valeurs par défaut
 function norm(s) {
   const d = newSheet(NATURES[s.nature] ? s.nature : 'neutre'), o = { ...d, ...s };
   const c0 = s.coins || {}, legacy = typeof c0.go === 'number' ? { go: c0.go, po: c0.po || 0, pa: c0.pa || 0 } : null; // ancienne monnaie = « dans les poches »
   o.coins = { pockets: { ...d.coins.pockets, ...(legacy || c0.pockets) }, reserve: { ...d.coins.reserve, ...c0.reserve } };
-  const a = s.armor || {}; o.armor = { type: a.type || '', reduction: a.reduction ? String(a.reduction) : '' };
+  const a = s.armor || {}; o.armor = { type: a.type || '', reduction: a.reduction ? String(a.reduction) : '', desc: a.desc == null ? null : String(a.desc) };
   o.weapons = (Array.isArray(s.weapons) ? s.weapons : []).map(w => ({ ...blankWeapon(), ...w, id: w.id || uid() }));
   o.carac = { ...d.carac, ...s.carac }; o.mod = { ...d.mod, ...s.mod }; o.subPair = { ...s.subPair };
   ['skills', 'flaws'].forEach(k => { o[k] = Array.isArray(s[k]) ? s[k] : []; });
   o.spells = (Array.isArray(s.spells) ? s.spells : []).map(k => ({ ...blankSpell(), ...k, id: k.id || uid(), o: { ...k.o } }));
-  o.cards = (Array.isArray(s.cards) ? s.cards : []).map(c => ({ ...blankCard(), ...c, o: { ...c.o } }));
+  o.cards = (Array.isArray(s.cards) ? s.cards : []).map(c => { const k = { ...blankCard(), ...c, o: { ...c.o } }; if (String(k.stat).startsWith('spell:')) { if (!('link' in k.o)) k.o.link = ''; } else k.stat = ''; return k; });
   if (s.phase === undefined) { o.phase = s.validated ? 3 : 1; o.creationNature = o.nature; }
   if (o.phase === 2) o.phase = 1; // les anciennes phases 1 et 2 sont fusionnées
   o.createdAt = s.createdAt || s.savedAt || new Date().toISOString();
@@ -170,7 +170,7 @@ const durNum = c => { const raw = String(c.o.duration ?? '').trim(); return /^\d
 function cardAction(act, i, k, list = 'cards') { // champs éventuels, Lancer, Tour suivant, Fin (cards et sorts signature)
   const s = cur(), c = s[list][i], mana = s.fund && s.fund.mana;
   if (act === 'opt') c.o[k] = '';
-  else if (act === 'optdel') delete c.o[k];
+  else if (act === 'optdel') { delete c.o[k]; if (k === 'link') c.stat = ''; }
   else if (s.phase !== 3) return;
   else if (act === 'end') { c.active = false; c.turn = 0; }
   else if (act === 'cast' || act === 'next') {
@@ -245,18 +245,21 @@ $('font').innerHTML = FONTS.map(t => `<option value="${t.id}">${t.label}</option
 const plain = t => String(t || '').normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase(); // recherche sans accents ni casse
 // Encarts de save d'un sort : moyenne Savoir / caractéristique d'incantation + (palier - 1) ; malus contre une cible = palier - 1
 const saveBadges = (s, e, p) => `<span class="badge">Save sans cible : ${s.incant ? avg(e.sa, e[s.incant]) + (p - 1) : '—'}</span><span class="badge">Malus de save (contre cible) : ${p > 1 ? '-' + (p - 1) : '0'}</span>`;
-const targetBadge = c => ('target' in c.o ? '<span class="badge">Réussite : save de l’ennemi</span>' : '');
+const targetBadge = c => ('target' in c.o ? `<span class="badge">Réussite : save de l’ennemi${c.saveStats && c.saveStats.length ? ' (' + c.saveStats.map(x => x.toUpperCase()).join(' / ') + ')' : ''}</span>` : '');
 const activeBadge = c => (c.active ? `<span class="badge">En cours : tour ${c.turn}${durNum(c) ? ' / ' + durNum(c) : String(c.o.duration || '').trim() ? ' (durée : ' + esc(String(c.o.duration).trim()) + ')' : ''}</span>` : '');
 const typeSelect = (l, i, c) => `<select data-l="${l}" data-i="${i}" data-k="type" aria-label="Type">${Object.entries(CARD_TYPES).filter(([k]) => l === 'cards' || k !== 'manoeuvre').map(([k, v]) => `<option value="${k}" ${c.type === k ? 'selected' : ''}>${v}</option>`).join('')}</select>`;
 // Attributs communs aux cards et aux sorts signature (champs éventuels ajoutés par le joueur) et boutons de jeu
 function attrBlock(l, i, c) {
-  const opts = Object.keys(CARD_OPTIONAL), plainOpts = opts.filter(k => !CARD_OPTIONAL[k].flag);
+  const opts = Object.keys(CARD_OPTIONAL).filter(k => k !== 'link' || l === 'cards'), plainOpts = opts.filter(k => !CARD_OPTIONAL[k].flag && !CARD_OPTIONAL[k].area), areaOpts = opts.filter(k => CARD_OPTIONAL[k].area);
   const attr = (k, label, ph = '', type = 'text') => `<label class="field">${label}<input type="${type}" min="0" placeholder="${ph}" data-l="${l}" data-i="${i}" data-k="${k}" value="${esc(c[k])}"></label>`;
   return `<div class="grid2">${attr('cast', "Temps d'incantation")}${attr('mana', 'Coût en mana', '0', 'number')}${attr('range', 'Portée')}
     ${plainOpts.filter(k => k in c.o).map(k => `<div class="field">${CARD_OPTIONAL[k].label}<div class="row"><input class="grow" type="${CARD_OPTIONAL[k].num ? 'number' : 'text'}" min="0" data-l="${l}" data-i="${i}" data-k="o.${k}" value="${esc(c.o[k])}"><button data-act="optdel" data-l="${l}" data-i="${i}" data-k="${k}" aria-label="Retirer ce champ">✕</button></div></div>`).join('')}</div>
     <div class="row">${opts.filter(k => !(k in c.o)).map(k => `<button class="chip" data-act="opt" data-l="${l}" data-i="${i}" data-k="${k}">+ ${CARD_OPTIONAL[k].label}</button>`).join('')}
       ${'target' in c.o ? `<button class="chip on" data-act="optdel" data-l="${l}" data-i="${i}" data-k="target" title="Retirer">${CARD_OPTIONAL.target.label} ✕</button>` : ''}
-      <button class="p3" data-act="cast" data-l="${l}" data-i="${i}">Lancer</button>${c.active ? `<button class="p3" data-act="next" data-l="${l}" data-i="${i}">Tour suivant</button><button class="p3" data-act="end" data-l="${l}" data-i="${i}">Fin</button>` : ''}</div>`;
+      <button class="p3" data-act="cast" data-l="${l}" data-i="${i}">Lancer</button>${c.active ? `<button class="p3" data-act="next" data-l="${l}" data-i="${i}">Tour suivant</button><button class="p3" data-act="end" data-l="${l}" data-i="${i}">Fin</button>` : ''}</div>
+    ${l === 'cards' && 'link' in c.o ? `<div class="row"><label class="field grow">Sort signature lié<select data-l="cards" data-i="${i}" data-k="stat" aria-label="Sort signature lié"><option value="">—</option>${cur().spells.map(k => `<option value="spell:${k.id}" ${c.stat === 'spell:' + k.id ? 'selected' : ''}>${esc(k.name || 'sans nom')}</option>`).join('')}</select></label><button data-act="optdel" data-l="cards" data-i="${i}" data-k="link" aria-label="Retirer le lien">✕</button></div>` : ''}
+    ${'target' in c.o ? `<div class="row"><span class="small">Save de l’ennemi sur :</span>${CARACS.map(id => `<button class="chip ${(c.saveStats || []).includes(id) ? 'on' : ''}" data-savestat="${id}" data-l="${l}" data-i="${i}" title="${CARAC_NAMES[id]}">${id.toUpperCase()}</button>`).join('')}</div>` : ''}
+    ${areaOpts.filter(k => k in c.o).map(k => `<label class="field">${CARD_OPTIONAL[k].label}<div class="row"><textarea class="grow" rows="2" data-l="${l}" data-i="${i}" data-k="o.${k}">${esc(c.o[k])}</textarea><button data-act="optdel" data-l="${l}" data-i="${i}" data-k="${k}" aria-label="Retirer ce champ">✕</button></div></label>`).join('')}`; // zones de texte extensibles en dernière ligne
 }
 function renderCards(s) {
   const e = effAll(s), q = plain(cardQuery);
@@ -266,17 +269,13 @@ function renderCards(s) {
   $('cardCount').textContent = `${shown.length} / ${s.cards.length} card(s)`;
   document.querySelectorAll('[data-cf]').forEach(b => b.classList.toggle('on', b.dataset.cf === cardFilter));
   $('cards').innerHTML = shown.map(({ c, i }) => {
-    const sp = c.stat.startsWith('spell:') ? s.spells.find(k => k.id === c.stat.slice(6)) : null;
-    const stat = sp || CARACS.includes(c.stat) ? c.stat : '', p = sp ? palier(sp.level) : 1;
+    const sp = 'link' in c.o && c.stat.startsWith('spell:') ? s.spells.find(k => k.id === c.stat.slice(6)) : null;
+    const stat = sp ? c.stat : '', p = sp ? palier(sp.level) : 1;
     const link = sp ? `<span class="badge">Sort signature « ${esc(sp.name || 'sans nom')} » · palier ${p}</span>` : '';
-    const rate = CARACS.includes(c.stat) ? `<span class="badge">${CARAC_NAMES[c.stat]} · %R : ${successRate(s.nature, e[c.stat])} %</span>` : '';
     return `<div class="item"><div class="row"><input class="grow" data-l="cards" data-i="${i}" data-k="name" value="${esc(c.name)}" placeholder="Nom de la card">
       ${typeSelect('cards', i, c)}
-      <select data-l="cards" data-i="${i}" data-k="stat" aria-label="Caractéristique utilisée"><option value="">Lancer : —</option>
-        ${CARACS.map(id => `<option value="${id}" ${stat === id ? 'selected' : ''}>${CARAC_NAMES[id]}</option>`).join('')}
-        ${s.spells.map(k => `<option value="spell:${k.id}" ${stat === 'spell:' + k.id ? 'selected' : ''}>Sort signature : ${esc(k.name || 'sans nom')}</option>`).join('')}</select>
       <button data-act="del" data-l="cards" data-i="${i}" aria-label="Supprimer">✕</button></div>
-      <div class="row">${link}${rate}${c.type !== 'manoeuvre' ? saveBadges(s, e, p) : ''}${targetBadge(c)}${activeBadge(c)}</div>
+      <div class="row">${link}${c.type !== 'manoeuvre' ? saveBadges(s, e, p) : ''}${targetBadge(c)}${activeBadge(c)}</div>
       ${ta('cards', i, 'desc', c.desc, 2, 'Description générale')}
       ${attrBlock('cards', i, c)}</div>`;
   }).join('') || '<div class="hint-line">Aucune card à afficher.</div>';
@@ -298,30 +297,46 @@ function setupCollapsibleSections() {
     }
     section.appendChild(body);
     const button = document.createElement('button');
-    button.type = 'button'; button.className = 'collapse-toggle'; button.dataset.collapse = String(index);
+    const sid = section.id || String(index); button.type = 'button'; button.className = 'collapse-toggle'; button.dataset.collapse = sid;
     button.setAttribute('aria-expanded', 'true'); button.setAttribute('aria-label', 'Replier cette section'); button.textContent = '−';
     head.appendChild(button);
-    const closed = localStorage.getItem('coia-section-' + index) === 'closed';
+    const closed = localStorage.getItem('coia-section-' + sid) === 'closed';
     body.hidden = closed; button.setAttribute('aria-expanded', String(!closed));
     button.textContent = closed ? '+' : '−'; button.setAttribute('aria-label', closed ? 'Déplier cette section' : 'Replier cette section');
   });
 }
 
-function renderWeapons(s) { // tableau : une arme par ligne
+function renderWeapons(s) { // tableau : une arme par ligne, avec une ligne de description facultative en dessous
   const head = '<div class="wrow whead"><span>Nom de l’arme</span><span>Dés de dégâts</span><span>Portée</span><span>Magique</span><span></span></div>';
-  $('weapons').innerHTML = head + (s.weapons.map((w, i) => `<div class="wrow">
+  $('weapons').innerHTML = head + (s.weapons.map((w, i) => `<div class="witem"><div class="wrow">
     <input data-weapon="name" data-i="${i}" value="${esc(w.name)}" placeholder="Nom" aria-label="Nom de l’arme ${i + 1}">
     <input data-weapon="damage" data-i="${i}" value="${esc(w.damage)}" placeholder="ex. 1d8" aria-label="Dés de dégâts">
     <input data-weapon="range" data-i="${i}" value="${esc(w.range)}" placeholder="ex. contact" aria-label="Portée">
     <select data-weapon="magical" data-i="${i}" aria-label="Arme magique ?"><option value="no" ${w.magical === 'no' ? 'selected' : ''}>Non</option><option value="yes" ${w.magical === 'yes' ? 'selected' : ''}>Oui</option></select>
-    <button type="button" data-weapon-del="${i}" class="delete-weapon" aria-label="Supprimer ${esc(w.name || 'cette arme')}">✕</button></div>`).join('') || '<p class="small no-weapons">Aucune arme ajoutée.</p>');
+    <span class="wact"><button type="button" data-weapon-desc="${i}" class="mini-icon" title="Ajouter ou retirer une description" aria-label="Ajouter ou retirer une description">✎</button>
+    <button type="button" data-weapon-del="${i}" class="delete-weapon" aria-label="Supprimer ${esc(w.name || 'cette arme')}">✕</button></span></div>
+    ${w.desc != null ? `<div class="wdesc"><input data-weapon="desc" data-i="${i}" value="${esc(w.desc)}" placeholder="Description (facultatif)" aria-label="Description de l’arme ${i + 1}"></div>` : ''}</div>`).join('') || '<p class="small no-weapons">Aucune arme ajoutée.</p>');
   $('armorType').value = s.armor.type || ''; $('armorReduction').value = s.armor.reduction || '';
+  $('armorDescRow').classList.toggle('hidden', s.armor.desc == null); $('armorDesc').value = s.armor.desc || '';
 }
 
 function renderTabs() {
-  $('sheets').innerHTML = store.order.map(id => `<div class="tab ${id === store.active ? 'active' : ''}">
-    <button class="pick" data-tab="${id}">${esc(store.sheets[id].name || 'Sans nom')}</button><button class="x" data-close="${id}" aria-label="Fermer la fiche">✕</button></div>`).join('')
-    + '<button data-new>+ Nouvelle fiche</button><button data-import>Importer</button>';
+  const last = store.order.length - 1;
+  $('sheets').innerHTML = store.order.map((id, i) => `<div class="tab ${id === store.active ? 'active' : ''}" draggable="true" data-sheet="${id}">
+    <button class="pick" data-tab="${id}">${esc(store.sheets[id].name || 'Sans nom')}</button>
+    ${id === store.active ? `<button class="mv" data-move="-1" ${i === 0 ? 'disabled' : ''} title="Monter cette fiche" aria-label="Déplacer cette fiche vers le haut ou la gauche"><span class="mvv">▲</span><span class="mvh">◀</span></button><button class="mv" data-move="1" ${i === last ? 'disabled' : ''} title="Descendre cette fiche" aria-label="Déplacer cette fiche vers le bas ou la droite"><span class="mvv">▼</span><span class="mvh">▶</span></button>` : ''}
+    <button class="x" data-close="${id}" aria-label="Fermer la fiche">✕</button></div>`).join('')
+    + '<button data-new>+ Nouvelle fiche</button><button data-dup>Dupliquer la fiche</button><button data-import>Importer</button>';
+}
+function duplicateSheet() { // copie de la fiche active, insérée juste après l'originale
+  const src = cur(), now = new Date().toISOString();
+  const copy = norm({ ...JSON.parse(JSON.stringify(src)), id: uid(), name: (src.name || 'Sans nom') + ' (copie)', createdAt: now, savedAt: now, changedAt: now, exportedAt: null });
+  store.sheets[copy.id] = copy; store.order.splice(store.order.indexOf(src.id) + 1, 0, copy.id); snaps[copy.id] = JSON.stringify(copy);
+  store.active = copy.id; levelUp = false;
+}
+function moveSheet(from, to) { // glisser-déposer : la fiche prend la place de la cible
+  const o = store.order, i = o.indexOf(from), j = o.indexOf(to); if (i < 0 || j < 0 || i === j) return;
+  o.splice(i, 1); o.splice(j, 0, from);
 }
 
 function renderLists(s) {
@@ -345,8 +360,8 @@ function renderLists(s) {
   renderCards(s);
   $('subs').innerHTML = SUBSKILLS.map(sk => {
     const j = s.subPair[sk.id] || 0, pr = sk.pairs[j], v = avg(e[pr[0]], e[pr[1]]), fixed = sk.pairs.length === 1;
-    const chips = fixed ? '' : `<div class="row">${sk.pairs.map((q, n) => `<button class="chip ${n === j ? 'on' : ''}" data-sub="${sk.id}" data-j="${n}">${q.join('/').toUpperCase()}</button>`).join('')}</div>`;
-    return `<div class="sub-card"><div class="sub-head"><span>${sk.name}</span>${fixed ? `<span class="small">${pr.join('/').toUpperCase()}</span>` : ''}</div><strong>${v}</strong><span class="small">%R : ${successRate(s.nature, v)} %</span>${chips}</div>`;
+    const pairs = fixed ? `<span class="small">${pr.join('/').toUpperCase()}</span>` : sk.pairs.map((q, n) => `<button class="chip ${n === j ? 'on' : ''}" data-sub="${sk.id}" data-j="${n}">${q.join('/').toUpperCase()}</button>`).join('');
+    return `<div class="sub-card"><div class="sub-name">${sk.name}</div><div class="sub-pairs">${pairs}</div><div class="sub-foot"><strong>${v}</strong><span class="small">R : ${successRate(s.nature, v)} %</span></div></div>`;
   }).join('');
   document.querySelectorAll('textarea').forEach(grow);
 }
@@ -366,14 +381,14 @@ function render() {
     $(id + '-info').textContent = `${n.min}–${ph === 3 ? n.gameMax : n.max}`;
     $(id + '-info').title = ph === 3 ? `Minimum ${n.min}, maximum de jeu ${n.gameMax}` : `Minimum ${n.min}, maximum de création ${n.max}`;
     $(id + '-real').textContent = ph === 1 ? '' : `Réel : ${s.carac[id]}` + (m ? ` (${m > 0 ? '+' : ''}${m})` : '');
-    $(id + '-r').textContent = `%R : ${successRate(s.nature, e[id])} %`;
+    $(id + '-r').textContent = `R : ${successRate(s.nature, e[id])} %`;
   });
   document.querySelectorAll('[data-lvl^="carac"]').forEach(b => { b.disabled = s.carac[b.dataset.lvl.split(':')[1]] >= n.gameMax; });
 
   const sum = CARACS.reduce((t, id) => t + s.carac[id], 0), maxTotal = ph === 3 ? CARACS.reduce((t, id) => t + s.caracMax[id], 0) : 5 * n.max;
   $('pointsCard').classList.toggle('hidden', ph === 3); $('pointsLabel').textContent = 'Points restants';
   $('points').textContent = q ? `${q.rest} (carac. ${q.X} · comp./sorts ${q.Y})` : '';
-  $('floatPoints').classList.toggle('hidden', ph !== 1);
+  $('floatPoints').classList.toggle('hidden', ph !== 1); $('secFunds').classList.toggle('sticky-funds', ph === 3);
   if (q) { $('fpX').textContent = q.X; $('fpY').textContent = q.Y; $('floatPoints').classList.toggle('done', q.rest === 0); }
   $('success').textContent = `${Math.round(CARACS.reduce((t, id) => t + successRate(s.nature, e[id]), 0) / 5)} %`;
   $('total').textContent = `${sum} / ${maxTotal}`;
@@ -482,6 +497,9 @@ document.addEventListener('click', e => {
   if (d.collapse !== undefined) { const section = b.closest('.section'), body = section && section.querySelector(':scope > .section-content'); if (!body) return; body.hidden = !body.hidden; const closed = body.hidden; b.textContent = closed ? '+' : '−'; b.setAttribute('aria-expanded', String(!closed)); b.setAttribute('aria-label', closed ? 'Déplier cette section' : 'Replier cette section'); localStorage.setItem('coia-section-' + d.collapse, closed ? 'closed' : 'open'); return; }
   else if (b.id === 'addWeapon') { s.weapons.push(blankWeapon()); }
   else if (d.weaponDel !== undefined) { s.weapons.splice(+d.weaponDel, 1); }
+  else if (d.weaponDesc !== undefined) { const w = s.weapons[+d.weaponDesc]; w.desc = w.desc == null ? '' : null; }
+  else if (d.armorDesc !== undefined) { s.armor.desc = s.armor.desc == null ? '' : null; }
+  else if (d.savestat) { const it = s[d.l][+d.i], cur0 = it.saveStats || []; it.saveStats = cur0.includes(d.savestat) ? cur0.filter(x => x !== d.savestat) : [...cur0, d.savestat]; }
   else if (d.step) { stepCell(d.step, +d.d); }
   else if (d.lvl) { const [k, id] = d.lvl.split(':'); if (k === 'carac') { if (s.carac[id] < NATURES[s.nature].gameMax) s.carac[id]++; } else { s.fund[id].max++; s.fund[id].cur++; } }
   else if (d.reset) s.mod[d.reset] = 0;
@@ -500,9 +518,18 @@ document.addEventListener('click', e => {
     touch = false;
   }
   else if ('new' in d) { addSheet(newSheet()); touch = false; }
+  else if ('dup' in d) { duplicateSheet(); touch = false; }
+  else if (d.move !== undefined) { const o = store.order, i = o.indexOf(store.active), j = i + Number(d.move); if (j >= 0 && j < o.length) [o[i], o[j]] = [o[j], o[i]]; touch = false; }
   else if ('import' in d) return $('importFile').click();
   else return;
   if (touch) commit(); else { render(); persist(); }
+});
+// Glisser-déposer des fiches dans le panneau (sur ordinateur)
+$('sheets').addEventListener('dragstart', e => { const t = e.target.closest('.tab'); if (!t) return; e.dataTransfer.setData('text/plain', t.dataset.sheet); e.dataTransfer.effectAllowed = 'move'; });
+$('sheets').addEventListener('dragover', e => { if (e.target.closest('.tab')) e.preventDefault(); });
+$('sheets').addEventListener('drop', e => {
+  const t = e.target.closest('.tab'), from = e.dataTransfer.getData('text/plain'); if (!t || !from) return;
+  e.preventDefault(); moveSheet(from, t.dataset.sheet); render(); persist();
 });
 $('nature').addEventListener('change', e => changeNature(e.target.value));
 $('incant').addEventListener('change', e => { cur().incant = e.target.value; commit(); });
@@ -541,6 +568,36 @@ $('importFile').addEventListener('change', e => { // l'import (une fiche ou un e
     render(); persist(); // un import n'est pas une modification
   }).catch(() => alert("Ce fichier n'est pas une fiche valide.")).finally(() => { e.target.value = ''; });
 });
+
+// Lanceur de dés flottant : indépendant de la fiche, rien n'est enregistré
+const dice = { faces: 20, n: 1, mod: 0, hist: [] };
+function renderDice() {
+  document.querySelectorAll('[data-die]').forEach(b => b.classList.toggle('on', +b.dataset.die === dice.faces));
+  $('diceN').value = dice.n; $('diceMod').value = dice.mod; $('diceCustom').value = [4, 6, 8, 10, 12, 20, 100].includes(dice.faces) ? '' : dice.faces;
+  $('diceHistory').innerHTML = dice.hist.map(t => `<li>${t}</li>`).join('');
+}
+function readDice() { // lit les champs avec des bornes raisonnables
+  dice.n = clamp(parseInt($('diceN').value) || 1, 1, 20); dice.mod = clamp(parseInt($('diceMod').value) || 0, -99, 99);
+  const custom = parseInt($('diceCustom').value); if (custom) dice.faces = clamp(custom, 2, 1000);
+}
+function rollDice() {
+  readDice();
+  const rolls = Array.from({ length: dice.n }, () => 1 + Math.floor(Math.random() * dice.faces)), sum = rolls.reduce((a, b) => a + b, 0) + dice.mod;
+  const sign = dice.mod > 0 ? '+' : '', expr = `${dice.n}d${dice.faces}${dice.mod ? sign + dice.mod : ''}`;
+  $('diceResult').innerHTML = `<strong>${sum}</strong><span class="small">${expr} : ${rolls.join(' + ')}${dice.mod ? (dice.mod > 0 ? ' + ' : ' − ') + Math.abs(dice.mod) : ''}</span>`;
+  dice.hist = [`${expr} = ${sum}`, ...dice.hist].slice(0, 6); renderDice();
+}
+$('diceToggle').addEventListener('click', () => { const open = $('dicePanel').classList.toggle('hidden') === false; $('diceToggle').setAttribute('aria-expanded', String(open)); if (open) renderDice(); });
+$('dicePanel').addEventListener('click', e => {
+  const b = e.target.closest('button'); if (!b) return;
+  if (b.dataset.die) { dice.faces = +b.dataset.die; $('diceCustom').value = ''; readDice(); }
+  else if (b.dataset.diceN) { readDice(); dice.n = clamp(dice.n + +b.dataset.diceN, 1, 20); }
+  else if (b.dataset.diceMod) { readDice(); dice.mod = clamp(dice.mod + +b.dataset.diceMod, -99, 99); }
+  else if (b.id === 'diceRoll') return rollDice();
+  renderDice();
+});
+$('dicePanel').addEventListener('keydown', e => { if (e.key === 'Enter') { e.preventDefault(); rollDice(); } else if (e.key === 'Escape') { $('dicePanel').classList.add('hidden'); $('diceToggle').setAttribute('aria-expanded', 'false'); $('diceToggle').focus(); } });
+renderDice();
 
 // Panneau des fiches : trois traits pour l'ouvrir ou le fermer (état mémorisé)
 function applyNav() { let closed = false; try { closed = localStorage.getItem('coia-nav-closed') === '1'; } catch (e) { /* ignoré */ } document.querySelector('.app').classList.toggle('nav-closed', closed); $('navToggle').setAttribute('aria-expanded', String(!closed)); }
