@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Journal de campagne — Coïa</title>
+  <link rel="stylesheet" href="journal.css">
+</head>
+<body>
+<div class="journal-app">
+  <header class="journal-header">
+    <a class="back-link" href="index.html">← Retour à la fiche</a>
+    <div><p class="eyebrow">Carnet personnel · Coïa</p><h1>Journal de campagne</h1><p class="subtitle">Les lieux, les rencontres et les événements qui construisent votre histoire.</p></div>
+    <div class="view-switch" role="group" aria-label="Mode d'affichage">
+      <button class="view-button active" data-view="notebook" type="button">Carnet</button>
+      <button class="view-button" data-view="timeline" type="button">Chronologie</button>
+      <button class="view-button" data-view="wiki" type="button">Wiki</button>
+    </div>
+  </header>
+
+  <main class="journal-layout">
+    <aside class="journal-sidebar">
+      <button class="primary new-entry" id="newEntry">＋ Nouvelle entrée</button>
+      <div class="sidebar-tools"><span class="tool-caption">Votre carnet</span><span class="tool-seal">✦</span></div>
+      <label class="search-label" for="searchEntries">Rechercher</label>
+      <input id="searchEntries" type="search" placeholder="Nom, mot-clé…">
+      <nav class="category-nav" aria-label="Catégories du journal">
+        <button class="category active" data-filter="all">Toutes les entrées <span id="countAll">0</span></button>
+        <button class="category" data-filter="Lieu">⌖ Lieux explorés <span id="countLieu">0</span></button>
+        <button class="category" data-filter="PNJ">♙ PNJ rencontrés <span id="countPNJ">0</span></button>
+        <button class="category" data-filter="Objet">◇ Objets découverts <span id="countObjet">0</span></button>
+        <button class="category" data-filter="Événement">✦ Événements <span id="countÉvénement">0</span></button>
+        <button class="category" data-filter="Note">▤ Notes libres <span id="countNote">0</span></button>
+      </nav>
+      <div class="sidebar-note">Chaque entrée peut être reliée aux autres pour construire progressivement le lore de la campagne.</div>
+    </aside>
+
+    <section class="entry-list-panel" aria-label="Liste des entrées">
+      <div class="list-heading"><h2 id="listTitle">Toutes les entrées</h2><span id="listCount">0 entrée</span></div>
+      <div id="entryList" class="entry-list"><p class="empty-state">Aucune entrée pour le moment. Créez votre première page avec « Nouvelle entrée ».</p></div>
+    </section>
+
+    <section class="entry-detail" id="entryDetail" aria-live="polite">
+      <div class="detail-empty"><span class="ornament">✧</span><h2>Votre journal commence ici</h2><p>Sélectionnez une entrée ou créez une nouvelle page pour conserver une trace de vos aventures.</p><button class="primary" id="emptyNewEntry">＋ Créer une entrée</button></div>
+    </section>
+  </main>
+</div>
+
+<dialog id="entryDialog" class="entry-dialog">
+  <form id="entryForm" method="dialog">
+    <div class="dialog-heading"><div><p class="eyebrow">Nouvelle page</p><h2>Créer une entrée</h2></div><button type="button" class="icon-button" id="closeDialog" aria-label="Fermer">✕</button></div>
+    <fieldset class="type-picker"><legend>1. Choisir le type d'entrée</legend>
+      <label><input type="radio" name="type" value="Lieu" checked><span>⌖ Lieu</span></label>
+      <label><input type="radio" name="type" value="PNJ"><span>♙ PNJ</span></label>
+      <label><input type="radio" name="type" value="Objet"><span>◇ Objet</span></label>
+      <label><input type="radio" name="type" value="Événement"><span>✦ Événement</span></label>
+      <label><input type="radio" name="type" value="Note"><span>▤ Note libre</span></label>
+    </fieldset>
+    <div class="form-grid">
+      <label class="form-field full">Titre *<input name="title" required maxlength="100" placeholder="Ex. La tour oubliée"></label>
+      <label class="form-field">Date de création<input name="date" type="date"><small>Date réelle, conservée pour l'historique.</small></label>
+      <fieldset class="form-field game-date-field"><legend>Date en jeu</legend><div class="game-date-controls"><input name="gameDay" type="number" min="1" max="30" placeholder="Jour" aria-label="Jour en jeu"><select name="gameMonth" aria-label="Mois en jeu"><option value="">Mois</option><option>Vendémiaire</option><option>Brumaire</option><option>Frimaire</option><option>Nivôse</option><option>Pluviôse</option><option>Ventôse</option><option>Germinal</option><option>Floréal</option><option>Prairial</option><option>Messidor</option><option>Thermidor</option><option>Fructidor</option></select><input name="gameYear" type="number" min="1" placeholder="Année" aria-label="Année en jeu"></div><small>Calendrier de 12 mois de 30 jours. L'année peut rester vide tant qu'elle n'est pas connue.</small></fieldset>
+      <label class="form-field" id="subcategoryField">Catégorie / région<input name="subcategory" placeholder="Ex. Ruines, royaume…"></label>
+      <label class="form-field full">Description<textarea name="description" rows="5" placeholder="Décrivez ce que vous souhaitez retenir…"></textarea></label>
+      <section class="form-field full custom-attributes"><div class="attributes-heading"><strong>Attributs personnalisés</strong><div class="attribute-actions"><button type="button" id="manageAttributes" class="small-action">⚙ Gérer les attributs</button><button type="button" id="addAttribute" class="small-action">＋ Ajouter un attribut</button></div></div><p class="field-help">Créez vos propres champs une seule fois : ils seront proposés pour toutes les entrées de cette catégorie.</p><div id="customAttributeFields" class="custom-attribute-grid"></div></section>
+      <label class="form-field full">Illustration (facultatif)<input name="image" type="url" placeholder="URL d’une image distante"><small>Ou choisissez une image depuis votre appareil.</small><input name="imageFile" type="file" accept="image/*"></label>
+      <label class="form-field full">Entrées liées<input name="links" list="entrySuggestions" autocomplete="off" placeholder="Commencez à taper un lieu, un PNJ, un objet…"><datalist id="entrySuggestions"></datalist><div id="linkSuggestions" class="link-suggestions" aria-live="polite"></div><small>Des suggestions apparaissent à partir des entrées existantes. Vous pouvez en saisir plusieurs, séparées par des virgules.</small></label>
+    </div>
+    <div class="dialog-actions"><button type="button" id="cancelDialog">Annuler</button><button class="primary" id="saveEntry" type="submit">Créer l'entrée</button></div>
+  </form>
+</dialog>
+<script src="journal.js"></script>
+</body>
+</html>

@@ -1,0 +1,13 @@
+COÏA — JOURNAL v17
+
+Évolutions :
+- Ajout d'une date en jeu distincte de la date réelle de création.
+- Calendrier : 12 mois dans l'ordre révolutionnaire, 30 jours par mois, 360 jours par an, sans année bissextile.
+- La date en jeu proposée par défaut pour une nouvelle entrée est 14 Floréal ; l'année reste vide.
+- Tri des entrées par date en jeu lorsqu'elle est renseignée, puis par date réelle de création.
+- Gestion des attributs : renommage, modification des options de listes et suppression avec confirmation.
+- Les valeurs devenues invalides après modification d'une liste sont vidées.
+- Suggestions visibles et cliquables pour les liens entre entrées.
+- Conservation des identifiants des entrées lors des modifications.
+
+Stockage : les entrées et attributs restent dans localStorage, avec les mêmes clés que la v16 pour préserver les données existantes dans le même navigateur et la même origine. Faire une sauvegarde du navigateur avant mise à jour. La migration vers IndexedDB et la synchronisation entre appareils restent à réaliser.
