@@ -50,7 +50,7 @@ function newSheet(nature = 'neutre') {
   const base = Object.fromEntries(CARACS.map(id => [id, NATURES[nature].min]));
   const coin = () => ({ go: 0, po: 0, pa: 0 });
   return {
-    id: uid(), ...Object.fromEntries(TEXT_FIELDS.map(f => [f, ''])), level: 1, incant: '',
+    id: uid(), ...Object.fromEntries(TEXT_FIELDS.map(f => [f, ''])), level: 1, incant: '', portrait: '', extra: [], rubrics: [],
     nature, creationNature: nature, phase: 1,
     carac: base, mod: zero(), caracInit: null, caracMax: null, fund: null,
     coins: { pockets: coin(), reserve: coin() }, skills: [], flaws: [], spells: [], cards: [], weapons: [], armor: { type: '', reduction: '', desc: null },
@@ -67,6 +67,7 @@ function norm(s) {
   o.coins = { pockets: { ...d.coins.pockets, ...(legacy || c0.pockets) }, reserve: { ...d.coins.reserve, ...c0.reserve } };
   const a = s.armor || {}; o.armor = { type: a.type || '', reduction: a.reduction ? String(a.reduction) : '', desc: a.desc == null ? null : String(a.desc) };
   o.weapons = (Array.isArray(s.weapons) ? s.weapons : []).map(w => ({ ...blankWeapon(), ...w, id: w.id || uid() }));
+  o.extra = (Array.isArray(s.extra) ? s.extra : []).map(x => ({ label: '', value: '', ...x })); o.rubrics = (Array.isArray(s.rubrics) ? s.rubrics : []).map(x => ({ title: '', text: '', ...x })); o.portrait = typeof s.portrait === 'string' ? s.portrait : '';
   o.carac = { ...d.carac, ...s.carac }; o.mod = { ...d.mod, ...s.mod }; o.subPair = { ...s.subPair };
   ['skills', 'flaws'].forEach(k => { o[k] = Array.isArray(s[k]) ? s[k] : []; });
   o.spells = (Array.isArray(s.spells) ? s.spells : []).map(k => ({ ...blankSpell(), ...k, id: k.id || uid(), o: { ...k.o } }));
@@ -89,7 +90,10 @@ store.order.forEach(id => { store.sheets[id] = norm(store.sheets[id]); snaps[id]
 if (!store.sheets[store.active]) store.active = store.order[0];
 
 const cur = () => store.sheets[store.active];
-function persist() { try { localStorage.setItem(KEY, JSON.stringify(store)); } catch (e) { /* ignoré */ } }
+function persist() {
+  try { localStorage.setItem(KEY, JSON.stringify(store)); }
+  catch (e) { if (!persist.warned) { persist.warned = true; alert("L'espace de stockage du navigateur est plein : les dernières modifications ne sont pas enregistrées. Exporte tes fiches et retire des images si besoin."); } }
+}
 function save() { // une vraie modification de la fiche active
   cur().savedAt = cur().changedAt = new Date().toISOString();
   persist();
@@ -339,6 +343,17 @@ function moveSheet(from, to) { // glisser-déposer : la fiche prend la place de 
   o.splice(i, 1); o.splice(j, 0, from);
 }
 
+function renderExtras(s) { // informations facultatives de l'identité et rubriques du récit
+  $('extraList').innerHTML = s.extra.map((x, i) => `<div class="field"><div class="row"><input class="grow extra-label" data-l="extra" data-i="${i}" data-k="label" value="${esc(x.label)}" placeholder="Intitulé" aria-label="Intitulé de l’information">
+    <button data-act="del" data-l="extra" data-i="${i}" aria-label="Retirer cette information">✕</button></div><textarea rows="1" data-l="extra" data-i="${i}" data-k="value" aria-label="${esc(x.label || 'Information')}">${esc(x.value)}</textarea></div>`).join('');
+  const has = (list, key, t) => list.some(x => String(x[key]).trim().toLowerCase() === t.toLowerCase());
+  $('extraAdd').innerHTML = EXTRA_SUGGESTIONS.filter(t => !has(s.extra, 'label', t)).map(t => `<button class="chip" data-addx="${esc(t)}">+ ${t}</button>`).join('') + '<button class="chip" data-addx="">+ Autre information</button>';
+  $('rubrics').innerHTML = s.rubrics.map((x, i) => `<div class="item"><div class="row"><input class="grow extra-label" data-l="rubrics" data-i="${i}" data-k="title" value="${esc(x.title)}" placeholder="Titre de la rubrique" aria-label="Titre de la rubrique">
+    <button data-act="del" data-l="rubrics" data-i="${i}" aria-label="Retirer cette rubrique">✕</button></div>${ta('rubrics', i, 'text', x.text, 4)}</div>`).join('');
+  $('rubricAdd').innerHTML = RUBRIC_SUGGESTIONS.filter(t => !has(s.rubrics, 'title', t)).map(t => `<button class="chip" data-addr="${esc(t)}">+ ${t}</button>`).join('') + '<button class="chip" data-addr="">+ Autre rubrique</button>';
+  $('portraitFrame').innerHTML = s.portrait ? `<img src="${s.portrait}" alt="Portrait du personnage">` : '<span class="small">Pas de portrait</span>';
+  $('portraitBtn').textContent = s.portrait ? 'Remplacer' : 'Ajouter un portrait'; $('portraitDel').classList.toggle('hidden', !s.portrait);
+}
 function renderLists(s) {
   const e = effAll(s), edit = canEdit(s);
   $('skills').innerHTML = s.skills.map((k, i) => `<div class="item"><div class="row">
@@ -413,7 +428,7 @@ function render() {
   $('levelUp').classList.toggle('hidden', ph !== 3); $('levelUp').textContent = levelUp ? 'Terminer Level Up' : 'Level Up';
   $('restore').disabled = !snaps[s.id];
   $('saveInfo').textContent = `Enregistrement automatique dans ce navigateur, sur cet appareil. Dernier : ${fmtDate(s.savedAt)}`;
-  renderTabs(); renderLists(s); renderWeapons(s); renderExport();
+  renderTabs(); renderExtras(s); renderLists(s); renderWeapons(s); renderExport();
 }
 function commit() { render(); save(); }
 
@@ -504,6 +519,8 @@ document.addEventListener('click', e => {
   else if (d.lvl) { const [k, id] = d.lvl.split(':'); if (k === 'carac') { if (s.carac[id] < NATURES[s.nature].gameMax) s.carac[id]++; } else { s.fund[id].max++; s.fund[id].cur++; } }
   else if (d.reset) s.mod[d.reset] = 0;
   else if (d.cf) cardFilter = d.cf;
+  else if (d.addx !== undefined) s.extra.push({ label: d.addx, value: '' });
+  else if (d.addr !== undefined) s.rubrics.push({ title: d.addr, text: '' });
   else if (d.act === 'opt' || d.act === 'optdel' || d.act === 'cast' || d.act === 'next' || d.act === 'end') cardAction(d.act, +d.i, d.k, d.l || 'cards');
   else if (d.sub) s.subPair[d.sub] = +d.j;
   else if (d.act === 'lvl') stepLevel(d.l, +d.i, +d.d);
@@ -567,6 +584,27 @@ $('importFile').addEventListener('change', e => { // l'import (une fiche ou un e
     list.forEach(d => { const s = norm({ ...d, id: uid() }); s.exportedAt = new Date().toISOString(); s.changedAt = null; addSheet(s); });
     render(); persist(); // un import n'est pas une modification
   }).catch(() => alert("Ce fichier n'est pas une fiche valide.")).finally(() => { e.target.value = ''; });
+});
+
+// Portrait : l'image est réduite (400 px, JPEG) pour rester légère dans le stockage et dans les exports
+function shrinkImage(file, max) {
+  return new Promise((resolve, reject) => {
+    const img = new Image(), url = URL.createObjectURL(file);
+    img.onload = () => {
+      const k = Math.min(1, max / Math.max(img.width, img.height)), c = document.createElement('canvas');
+      c.width = Math.round(img.width * k); c.height = Math.round(img.height * k);
+      const g = c.getContext('2d'); g.fillStyle = '#fff'; g.fillRect(0, 0, c.width, c.height); g.drawImage(img, 0, 0, c.width, c.height);
+      URL.revokeObjectURL(url); resolve(c.toDataURL('image/jpeg', 0.82));
+    };
+    img.onerror = () => { URL.revokeObjectURL(url); reject(new Error('image')); };
+    img.src = url;
+  });
+}
+$('portraitBtn').addEventListener('click', () => $('portraitFile').click());
+$('portraitDel').addEventListener('click', () => { if (confirm('Retirer le portrait ?')) { cur().portrait = ''; commit(); } });
+$('portraitFile').addEventListener('change', e => {
+  const f = e.target.files[0]; if (!f) return;
+  shrinkImage(f, 400).then(url => { cur().portrait = url; commit(); }).catch(() => alert("Cette image n'a pas pu être lue.")).finally(() => { e.target.value = ''; });
 });
 
 // Lanceur de dés flottant : indépendant de la fiche, rien n'est enregistré

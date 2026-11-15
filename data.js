@@ -58,3 +58,7 @@ const COINS = { go: "Gros d'or (go)", po: "Pièces d'or (po)", pa: "Pièces d'ar
 
 // Sauvegarde : au-delà de ce délai sans export, des modifications non exportées déclenchent le bandeau d'avertissement
 const EXPORT_REMINDER_H = 24;
+
+// Identité et récit : suggestions de champs facultatifs (le joueur peut aussi écrire son propre intitulé)
+const EXTRA_SUGGESTIONS = ['Surnom', 'Titre', 'Genre', 'Poids', 'Signe distinctif'];
+const RUBRIC_SUGGESTIONS = ['Concept', 'Citations'];
